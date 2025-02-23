@@ -21,6 +21,17 @@ export class CartService {
     createCartDto: CreateCartDto,
     userData: IUserToken,
   ): Promise<CartResponseDto> {
+    const existingCart = await this.findOneByProductId(createCartDto.productId);
+    if (existingCart) {
+      return await this.update(
+        existingCart.id,
+        {
+          productId: createCartDto.productId,
+          quantity: existingCart.quantity + createCartDto.quantity,
+        },
+        userData,
+      );
+    }
     const user = await this.userService.findOne(userData.sub);
     const product = await this.productService.findOne(createCartDto.productId);
     const cart = this.cartRepository.create({
@@ -98,6 +109,26 @@ export class CartService {
     return this.mapToResponseDto(cart);
   }
 
+  async findOneByProductId(product_id: number): Promise<Cart> {
+    const cart = await this.cartRepository.findOne({
+      where: {
+        product: {
+          id: product_id,
+        },
+      },
+      relations: {
+        user: true,
+        product: {
+          categories: true,
+        },
+      },
+    });
+    if (!cart) {
+      throw new NotFoundException(`Cart with P ID ${product_id} not found`);
+    }
+    return cart;
+  }
+
   async update(
     id: number,
     updateCartDto: UpdateCartDto,
@@ -122,6 +153,7 @@ export class CartService {
       );
       cart.product = product;
     }
+    cart.quantity = updateCartDto.quantity;
     await this.cartRepository.save(cart);
     return this.mapToResponseDto(cart);
   }
