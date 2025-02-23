@@ -123,9 +123,6 @@ export class CartService {
         },
       },
     });
-    if (!cart) {
-      throw new NotFoundException(`Cart with P ID ${product_id} not found`);
-    }
     return cart;
   }
 
