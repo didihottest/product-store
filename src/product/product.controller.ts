@@ -15,18 +15,21 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto, UpdateProductDto } from './dto/request.dto';
 import { ProductResponseDto } from './dto/response.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../config/multer.config';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post('upload')
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('file', multerConfig))
   async uploadImage(
     @UploadedFile(
@@ -47,6 +50,7 @@ export class ProductController {
   }
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   create(
     @Body() createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {
@@ -54,6 +58,7 @@ export class ProductController {
   }
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   async find(
     @Query('name') name?: string,
     @Query('minPrice') minPrice?: number,
@@ -78,6 +83,7 @@ export class ProductController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
   update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -86,6 +92,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
   remove(@Param('id') id: string): Promise<void> {
     return this.productService.remove(+id);
   }

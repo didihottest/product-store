@@ -9,16 +9,19 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/request.dto';
 import { CategoryResponseDto } from './dto/response.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   create(
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<CategoryResponseDto> {
@@ -46,6 +49,7 @@ export class CategoryController {
     return this.categoryService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -54,6 +58,7 @@ export class CategoryController {
     return this.categoryService.update(+id, updateCategoryDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.categoryService.remove(+id);
